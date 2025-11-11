@@ -23,31 +23,36 @@ app.use("*", notFound);
 
 // getCookie();
 
-app.listen(port, () =>
-	console.log("Backend running on http://localhost:" + port),
-);
+module.exports = app;
 
-let shuttingDown = false;
-function shutdown(reason, code = 0) {
-	if (shuttingDown) return;
-	shuttingDown = true;
-	console.log(`Shutting down watcher (${reason})...`);
-	dataUtils.abort();
-	setImmediate(() => process.exit(code));
+if (require.main === module) {
+	const server = app.listen(port, () =>
+		console.log("Backend running on http://localhost:" + port),
+	);
+
+	let shuttingDown = false;
+	function shutdown(reason, code = 0) {
+		if (shuttingDown) return;
+		shuttingDown = true;
+		console.log(`Shutting down watcher (${reason})...`);
+		dataUtils.abort();
+		// Close the HTTP server first, then exit
+		server.close(() => setImmediate(() => process.exit(code)));
+	}
+
+	process.on("SIGINT", () => shutdown("SIGINT", 0));
+	process.on("SIGTERM", () => shutdown("SIGTERM", 0));
+	process.on("uncaughtException", (err) => {
+		console.error("Uncaught exception:", err);
+		shutdown("uncaughtException", 1);
+	});
+	process.on("unhandledRejection", (reason) => {
+		console.error("Unhandled rejection:", reason);
+		shutdown("unhandledRejection", 1);
+	});
+
+	dataUtils.run().catch((err) => {
+		console.error("Failed to start watcher:", err);
+		process.exit(1);
+	});
 }
-
-process.on("SIGINT", () => shutdown("SIGINT", 0));
-process.on("SIGTERM", () => shutdown("SIGTERM", 0));
-process.on("uncaughtException", (err) => {
-	console.error("Uncaught exception:", err);
-	shutdown("uncaughtException", 1);
-});
-process.on("unhandledRejection", (reason) => {
-	console.error("Unhandled rejection:", reason);
-	shutdown("unhandledRejection", 1);
-});
-
-dataUtils.run().catch((err) => {
-	console.error("Failed to start watcher:", err);
-	process.exit(1);
-});
