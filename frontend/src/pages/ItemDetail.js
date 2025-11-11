@@ -1,27 +1,37 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useFetch } from "../hooks/useFetch";
+import { BASE_API_URL } from "../utils/constants";
 
 function ItemDetail() {
-  const { id } = useParams();
-  const [item, setItem] = useState(null);
-  const navigate = useNavigate();
+	const { id } = useParams();
+	const navigate = useNavigate();
+	const request = useFetch(
+		{ input: BASE_API_URL + "/api/items/" + id },
+		{ onError: () => navigate("/") },
+	);
 
-  useEffect(() => {
-    fetch('/api/items/' + id)
-      .then(res => res.ok ? res.json() : Promise.reject(res))
-      .then(setItem)
-      .catch(() => navigate('/'));
-  }, [id, navigate]);
+	useEffect(() => {
+		request.fetch();
 
-  if (!item) return <p>Loading...</p>;
+		return () => {
+			request.cancel("unmount");
+		};
+	}, []);
 
-  return (
-    <div style={{padding: 16}}>
-      <h2>{item.name}</h2>
-      <p><strong>Category:</strong> {item.category}</p>
-      <p><strong>Price:</strong> ${item.price}</p>
-    </div>
-  );
+	if (!request.data) return <p>Loading...</p>;
+
+	return (
+		<div style={{ padding: 16 }}>
+			<h2>{request.data.name}</h2>
+			<p>
+				<strong>Category:</strong> {request.data.category}
+			</p>
+			<p>
+				<strong>Price:</strong> ${request.data.price}
+			</p>
+		</div>
+	);
 }
 
 export default ItemDetail;

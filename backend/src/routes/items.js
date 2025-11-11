@@ -2,13 +2,14 @@ const express = require("express");
 const router = express.Router();
 const dataUtils = require("../utils/data");
 
+const PAGE_SIZE = 5;
+
 // GET /api/items
 router.get("/", (req, res, next) => {
 	try {
 		const data = dataUtils.getData();
-		const { limit, q } = req.query;
+		const { pg = "1", q } = req.query;
 		let results = data;
-		console.log({ data });
 
 		if (q) {
 			// Simple substring search (sub‑optimal)
@@ -17,11 +18,15 @@ router.get("/", (req, res, next) => {
 			);
 		}
 
-		if (limit) {
-			results = results.slice(0, parseInt(limit));
+		const total = results.length;
+
+		if (pg) {
+			const page = parseInt(pg);
+			const start = (page - 1) * PAGE_SIZE;
+			results = results.slice(start, start + PAGE_SIZE);
 		}
 
-		res.json(results);
+		res.json({ items: results, total });
 	} catch (err) {
 		next(err);
 	}

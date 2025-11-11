@@ -4,5 +4,7 @@
   { "id": 3, "name": "Ultra‑Wide Monitor", "category": "Electronics", "price": 999 },
   { "id": 4, "name": "Ergonomic Chair", "category": "Furniture", "price": 799 },
   { "id": 5, "name": "Standing Desk", "category": "Furniture", "price": 1199 },
-  { "id": 6, "name": "Standing Desk", "category": "Furniture", "price": 1199 }
+  { "id": 6, "name": "Standing Desk", "category": "Furniture", "price": 1199 },
+  { "id": 7, "name": "Standing Desk", "category": "Furniture", "price": 1199 },
+  { "id": 8, "name": "Standing Desk", "category": "Furniture", "price": 1199 }
 ]

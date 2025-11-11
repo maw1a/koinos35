@@ -1,21 +1,28 @@
-import React, { createContext, useCallback, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { useFetch } from "../hooks/useFetch";
+import { BASE_API_URL } from "../utils/constants";
 
 const DataContext = createContext();
 
 export function DataProvider({ children }) {
-  const [items, setItems] = useState([]);
+	const request = useFetch({ input: BASE_API_URL + `/api/items` });
 
-  const fetchItems = useCallback(async () => {
-    const res = await fetch('http://localhost:3001/api/items?limit=500'); // Intentional bug: backend ignores limit
-    const json = await res.json();
-    setItems(json);
-  }, []);
-
-  return (
-    <DataContext.Provider value={{ items, fetchItems }}>
-      {children}
-    </DataContext.Provider>
-  );
+	return (
+		<DataContext.Provider
+			value={{
+				items: request.data?.items || [],
+				total: request.data?.total ?? 10000,
+				loading: request.loading,
+				fetchItems: request.fetch,
+				abort: request.cancel,
+			}}
+		>
+			{children}
+		</DataContext.Provider>
+	);
 }
 
-export const useData = () => useContext(DataContext);
+export const useData = (pg) => {
+	const value = useContext(DataContext);
+	return value;
+};
